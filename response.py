@@ -32,10 +32,6 @@ SERVER_NAME = 'httpserver'
 HTTP_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
 
 
-def http_format_date_now(format):
-    return datetime.utcnow().strftime(format)
-
-
 class HttpResponse:
     def __init__(self, code, content_length=0, content_type='', content=b''):
         self.code = code
@@ -58,7 +54,7 @@ class HttpResponse:
                 'Content-Length: {content_length}\r\n'
                 'Content-Type: {content_type}\r\n\r\n'
                 ).format(http_ver=HTTP_VERSION, http_status=RESPONSE_STATUS[self.code.value],
-                         server_name=SERVER_NAME, date=http_format_date_now(HTTP_DATE_FORMAT),
+                         server_name=SERVER_NAME, date=self.date_now(),
                          content_length=self.content_length, content_type=self.content_type).encode() + self.body
 
     def get_fail(self):
@@ -68,4 +64,8 @@ class HttpResponse:
                 'Connection: Closed\r\n\r\n').format(http_ver=HTTP_VERSION,
                                                      http_status=RESPONSE_STATUS[self.code.value],
                                                      server_name=SERVER_NAME,
-                                                     date=http_format_date_now(HTTP_DATE_FORMAT)).encode()
+                                                     date=self.date_now()).encode()
+
+    @staticmethod
+    def date_now():
+        return datetime.utcnow().strftime(HTTP_DATE_FORMAT)

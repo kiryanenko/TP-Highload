@@ -33,14 +33,14 @@ class Handler:
             return response         # случай /../../../ ...
 
         path_to_index = os.path.join(full_path, 'index.html')
-        if os.path.exists(os.path.join(full_path)):
-            response.code = ResponseCode.FORBIDDEN
-        elif os.path.isfile(path_to_index):
+        if os.path.isfile(path_to_index):
             full_path = path_to_index
+        elif os.path.exists(os.path.join(full_path)):
+            response.code = ResponseCode.FORBIDDEN
         try:
             with open(full_path, 'rb') as f:
                 content = f.read()
-                response.body = content if method == 'GET' else b''  # в завимимости от метода либо ничего либо файл
+                response.body = content if method != "HEAD" else b''
                 response.content_length = len(content)
                 response.content_type = self.get_content_type(full_path)
                 response.code = ResponseCode.OK
