@@ -1,7 +1,9 @@
+# coding=utf-8
 import os
 from urllib.parse import urlparse, unquote, parse_qs
 from response import HttpResponse, ResponseCode, CONTENT_TYPES
 
+METHODS = ["GET", "HEAD"]
 
 class Handler:
     def __init__(self, root_dir):
@@ -10,15 +12,12 @@ class Handler:
     @staticmethod
     def parse_url(request):
         url = request.split(b' ')[1].decode()
-        if '://' not in url:
-            url = '//' + url
-        parsed_url = urlparse(url)
-        return unquote(parsed_url.path), parse_qs(unquote(parsed_url.query))
+        return unquote(urlparse(url).path)
 
     def handle(self, request):
         method = request.split(b' ')[0].decode()
-        path, query_params = self.parse_url(request)
-        if method in ["GET", "HEAD"]:
+        path = self.parse_url(request)
+        if method in METHODS:
             response = self.process(path, method)
         else:
             response = HttpResponse(ResponseCode.NOT_ALLOWED)
