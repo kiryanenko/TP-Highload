@@ -1,10 +1,9 @@
 FROM python:3
 
 # Копируем исходный код в Docker-контейнер
-ENV WORK /opt/WebServer
+ENV WORK /var/www/html/
 ADD ./ $WORK
 WORKDIR $WORK
 
-RUN pip install --no-cache-dir -r requirements.txt
-
-CMD [ "python", "./http.py" ]
+EXPOSE 80
+CMD python3 ./http.py -r $WORK
