@@ -28,7 +28,7 @@ class ResponseCode(Enum):
 
 
 HTTP_VERSION = '1.1'
-SERVER_NAME = 'httpserver'
+SERVER_NAME = 'HttpServer'
 HTTP_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
 
 

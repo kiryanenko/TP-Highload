@@ -1,6 +1,6 @@
 # coding=utf-8
 import os
-from urllib.parse import urlparse, unquote, parse_qs
+from urllib.parse import urlparse, unquote
 from response import HttpResponse, ResponseCode, CONTENT_TYPES
 
 METHODS = ["GET", "HEAD"]
