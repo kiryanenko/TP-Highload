@@ -1,3 +1,6 @@
+# coding=utf-8
+import config
+
 from datetime import datetime
 from enum import Enum
 
@@ -27,15 +30,13 @@ class ResponseCode(Enum):
     NOT_ALLOWED = 405
 
 
-HTTP_VERSION = '1.1'
-SERVER_NAME = 'HttpServer'
 HTTP_DATE_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
 
 
 class HttpResponse:
-    def __init__(self, code, content_length=0, content_type='', content=b''):
+    def __init__(self, code, content_len=0, content_type='', content=b''):
         self.code = code
-        self.content_length = content_length
+        self.content_length = content_len
         self.content_type = content_type
         self.body = content
 
@@ -47,24 +48,34 @@ class HttpResponse:
         return response
 
     def get_success(self):
-        return ('HTTP/{http_ver} {http_status}\r\n'
-                'Server: {server_name}\r\n'
-                'Date: {date}\r\n'
-                'Connection: Close\r\n'
-                'Content-Length: {content_length}\r\n'
-                'Content-Type: {content_type}\r\n\r\n'
-                ).format(http_ver=HTTP_VERSION, http_status=RESPONSE_STATUS[self.code.value],
-                         server_name=SERVER_NAME, date=self.date_now(),
-                         content_length=self.content_length, content_type=self.content_type).encode() + self.body
+        return '''\
+HTTP/{http_ver} {http_status}\r\n\
+Server: {server_name}\r\n\
+Date: {date}\r\n\
+Connection: Close\r\n\
+Content-Length: {content_length}\r\n\
+Content-Type: {content_type}\r\n\r\n\
+'''.format(
+            http_ver=config.HTTP_VERSION,
+            http_status=RESPONSE_STATUS[self.code.value],
+            server_name=config.SERVER_NAME,
+            date=self.date_now(),
+            content_length=self.content_length,
+            content_type=self.content_type
+        ).encode() + self.body
 
     def get_fail(self):
-        return ('HTTP/{http_ver} {http_status}\r\n'
-                'Server: {server_name}\r\n'
-                'Date: {date}\r\n'
-                'Connection: Closed\r\n\r\n').format(http_ver=HTTP_VERSION,
-                                                     http_status=RESPONSE_STATUS[self.code.value],
-                                                     server_name=SERVER_NAME,
-                                                     date=self.date_now()).encode()
+        return '''\
+HTTP/{http_ver} {http_status}\r\n\
+Server: {server_name}\r\n\
+Date: {date}\r\n\
+Connection: Closed\r\n\r\n\
+'''.format(
+            http_ver=config.HTTP_VERSION,
+            http_status=RESPONSE_STATUS[self.code.value],
+            server_name=config.SERVER_NAME,
+            date=self.date_now()
+        ).encode()
 
     @staticmethod
     def date_now():
