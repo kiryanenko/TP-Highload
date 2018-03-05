@@ -1,7 +1,7 @@
 FROM python:3
 
 # Копируем исходный код в Docker-контейнер
-ENV WORK /opt/
+ENV WORK /opt
 ADD ./ $WORK
 WORKDIR $WORK
 
