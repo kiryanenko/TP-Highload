@@ -22,7 +22,7 @@ class Handler:
             return HttpResponse(code=ResponseCode.NOT_ALLOWED)
 
         # нормализую путь, убирая избыточные разделители и ссылки на предыдущие директории
-        full_path = os.path.normpath(self.root_dir + path)
+        full_path = os.path.normpath(self.root_dir + '/' + path)
 
         if os.path.commonprefix([full_path, self.root_dir]) != self.root_dir:
             return HttpResponse(code=ResponseCode.NOT_FOUND)                    # случай /../../../ ...
