@@ -1,6 +1,6 @@
 # coding=utf-8
 import os
-from urllib.parse import urlparse, unquote
+from urllib.parse import unquote
 from response import HttpResponse, ResponseCode, CONTENT_TYPES
 
 METHODS = ["GET", "HEAD"]
@@ -13,7 +13,7 @@ class Handler:
     @staticmethod
     def parse_url(request):
         url = request.split(b' ')[1].decode()
-        return unquote(urlparse(url).path)
+        return unquote(url.split('?')[0])
 
     def handle(self, request):
         method = request.split(b' ')[0].decode()

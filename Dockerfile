@@ -6,4 +6,4 @@ ADD ./ $WORK
 WORKDIR $WORK
 
 EXPOSE 80
-CMD python3 $WORK/httpd.py
+CMD python3 main.py
