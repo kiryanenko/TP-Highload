@@ -19,7 +19,7 @@ class Handler:
         method = request.split(b' ')[0].decode()
         path = self.parse_url(request)
         if method not in METHODS:
-            return HttpResponse(ResponseCode.NOT_ALLOWED)
+            return HttpResponse(code=ResponseCode.NOT_ALLOWED)
 
         # нормализую путь, убирая избыточные разделители и ссылки на предыдущие директории
         full_path = os.path.normpath(self.root_dir + path)
