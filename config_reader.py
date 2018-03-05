@@ -13,5 +13,6 @@ class ConfigReader:
                         pass
                     else:
                         print('ERROR can not read param: ' + param)
+                    line = f.readline()
         except IOError:
             print('ERROR can not read config file')
