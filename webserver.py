@@ -14,6 +14,7 @@ class WebServer:
         self.server = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
 
     def exec(self):
+        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind(self.address)
         self.server.listen(self.listeners)
         for i in range(self.cpu_count):
