@@ -10,3 +10,4 @@ LISTENERS = 1000
 ROOT_DIR = "/var/www/html/"
 HTTP_VERSION = '1.1'
 SERVER_NAME = 'HttpServer'
+config_path = '/etc/httpd.conf'
