@@ -1,5 +1,7 @@
 class ConfigReader:
     def __init__(self, path):
+        self.host = None
+        self.listen = None
         self.path = path
         self.cpu_limit = None
         self.document_root = None
@@ -17,6 +19,10 @@ class ConfigReader:
                         self.cpu_limit = int(line.split(b' ')[1].strip().decode())
                     elif param == 'document_root':
                         self.document_root = line.split(b' ')[1].strip().decode()
+                    elif param == 'host':
+                        self.host = line.split(b' ')[1].strip().decode()
+                    elif param == 'listen':
+                        self.listen = int(line.split(b' ')[1].strip().decode())
                     elif param == 'thread_limit':
                         self.thread_limit = int(line.split(b' ')[1].strip().decode())
                     else:
