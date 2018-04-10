@@ -1,6 +1,7 @@
 import os
 import socket
 import select
+import struct
 
 
 class WebServer:
@@ -14,7 +15,6 @@ class WebServer:
         self.workers = []
 
     def start(self):
-        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind(self.address)
         self.server.listen(self.listeners)
 
@@ -30,17 +30,28 @@ class WebServer:
             if self.server in readable:
                 for worker in self.workers:
                     if worker.is_free:
-                        # передаём свободному потомку команду принять подключение
-                        worker.pipe.send(b'A')
+                        # передаём свободному потомку запрос
                         worker.is_free = False
+
+                        client, client_addr = self.server.accept()
+                        request = client.recv(self.buffer)
+
+                        if len(request.strip()) == 0:
+                            worker.is_free = True
+                            client.close()
+                            break
+
+                        worker.pipe.send(request)
+                        worker.client = client
                         break
 
             for worker in self.workers:
                 if worker.pipe.fileno() in readable:
-                    # мы получили команду от потомка
-                    command = worker.pipe.recv(1)
-                    if command == b'F':
-                        worker.is_free = True
+                    # мы получили ответ от потомка
+                    response = WebServer.recv_msg(worker.pipe)
+                    worker.client.send(response)
+                    worker.client.close()
+                    worker.is_free = True
 
     def create_child(self):
         # создаём пару связанных анонимных сокетов
@@ -52,24 +63,44 @@ class WebServer:
             child.close()
             while True:
                 # блокирующее чтение из сокета, соединяющего потомка с родителем
-                command = parent.recv(1)
-                # получаем соединение
-                client, client_addr = self.server.accept()
-                request = client.recv(self.buffer)
-
-                if len(request.strip()) > 0:
-                    response = self.handler.handle(request)
-                    client.send(response.build())
-
-                client.close()
+                request = parent.recv(self.buffer)
+                response = self.handler.handle(request)
                 # отправляем родителю информацию, что мы освободились
-                parent.send(b'F')
+                WebServer.send_msg(parent, response.build())
 
         # это выполняется в родительском процессе
         self.workers.append(WebServer.Worker(child))
         parent.close()
 
+    @staticmethod
+    def send_msg(sock, msg):
+        msg = struct.pack('>Q', len(msg)) + msg
+        sock.sendall(msg)
+
+    @staticmethod
+    def recv_msg(sock):
+        msg_len = WebServer.recv_all(sock, 8)
+        if not msg_len:
+            return None
+        msg_len = struct.unpack('>Q', msg_len)[0]
+        # Read the message data
+        return WebServer.recv_all(sock, msg_len)
+
+    @staticmethod
+    def recv_all(sock, size):
+        data = b''
+        while len(data) < size:
+            packet = sock.recv(size - len(data))
+            if not packet:
+                return None
+            data += packet
+        return data
+
+    def __del__(self):
+        self.server.close()
+
     class Worker:
         def __init__(self, pipe):
-            self.is_free = True
             self.pipe = pipe
+            self.is_free = True
+            self.client = None
