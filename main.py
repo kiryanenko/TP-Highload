@@ -24,4 +24,4 @@ if __name__ == "__main__":
 
     handler = Handler(root_dir)
     server = WebServer(cpu_count, address, config.LISTENERS, config.BUFFER, handler)
-    server.exec()
+    server.start()
