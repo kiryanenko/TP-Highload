@@ -1,5 +1,6 @@
 import os
 import socket
+import time
 
 
 class WebServer:
@@ -23,18 +24,29 @@ class WebServer:
             if pid != 0:
                 self.pids.append(pid)
             else:
-                print("Created worker PID: {}".format(os.getpid()))
+                pid = os.getpid()
+                print("Created worker PID: {}".format(pid))
                 while True:
+                    start_time = time.time()
                     client, client_addr = self.server.accept()
+                    wait_time = time.time() - start_time
+
                     request = client.recv(self.buffer)
                     if len(request.strip()) == 0:
                         client.close()
                         continue
 
                     response = self.handler.handle(request)
+                    handle_time = time.time() - start_time - wait_time
 
                     client.send(response.build())
                     client.close()
+                    send_time = time.time() - start_time - wait_time - handle_time
+                    all_time = time.time() - start_time
+                    print("[PID {}] Request time {}; ".format(pid, all_time) +
+                          "wait {} {}%; ".format(wait_time, wait_time / all_time * 100) +
+                          "handle {} {}%; ".format(handle_time, handle_time / all_time * 100) +
+                          "send {} {}%".format(send_time, send_time / all_time * 100))
 
         self.server.close()
 
