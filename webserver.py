@@ -20,8 +20,6 @@ class WebServer:
         self.server.bind(self.address)
         self.server.listen(self.listeners)
         self.server.setblocking(0)
-        epoll = select.epoll()
-        epoll.register(self.server.fileno(), select.EPOLLIN)
         for i in range(self.cpu_count):
             pid = os.fork()
 
@@ -31,18 +29,23 @@ class WebServer:
                 pid = os.getpid()
                 print("Created worker PID: {}".format(pid))
 
+                epoll = select.epoll()
+                epoll.register(self.server.fileno(), select.EPOLLIN)
+
                 connections = {}
                 responses = {}
 
                 while True:
-                    events = epoll.poll(1)
+                    events = epoll.poll()
                     for fileno, event in events:
                         if fileno == self.server.fileno() and event & select.EPOLLIN:
-                            connection, addr = self.server.accept()
-                            connection.setblocking(0)
-                            epoll.register(connection.fileno(), select.EPOLLIN)
-                            connections[connection.fileno()] = connection
-
+                            try:
+                                connection, addr = self.server.accept()
+                                connection.setblocking(0)
+                                epoll.register(connection.fileno(), select.EPOLLIN)
+                                connections[connection.fileno()] = connection
+                            except BlockingIOError:
+                                pass
                         elif event & select.EPOLLIN:
                             connection = connections[fileno]
                             request = connection.recv(self.buffer)
